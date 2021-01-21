@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\.github",
+    "\\.github\\ISSUE_TEMPLATE",
+    "\\.github\\workflows",
+    "\\bin",
+    "\\docs",
+    "\\flussi",
+    "\\log",
+    "\\requirements"
+  ],
+  "SelectedNode": "\\bin\\anonymous.py",
+  "PreviewInSolutionExplorer": false
+}

@@ -1,7 +1,7 @@
-Nome;Cognome;Data di nascita;Comune;Provincia;Email;Telefono;Classe;Sezione;Indirizzo
-Claudio;Foroncelli;02/11/2003;Vigasio;Verona;mail1@mail.com;123456789;4;CI;Informatica
-Claudio;Foroncelli;02/11/2003;Vigasio;Verona;mail1@mail.com;123456789;5;CI;Informatica
-Claudio;Foroncelli;02/11/2003;Vigasio;Verona;mail1@mail.com;123456789;4;CI;Informatica
-Claudio;Foroncelli;02/11/2003;Vigasio;Verona;mail1@mail.com;123456789;4;CI;Informatica
-Claudio;Foroncelli;02/11/2003;Vigasio;Verona;mail1@mail.com;123456789;4;CI;Informatica
-Claudio;Foroncelli;02/11/2003;Vigasio;Verona;mail1@mail.com;123456789;4;CI;Informatica
+Nome,Cognome,Data di nascita,Comune,Provincia,Email,Telefono,Classe,Sezione,Indirizzo
+Claudio,Foroncelli,02/11/2003,Vigasio,Verona,mail1@mail.com,123456789,4,CI,Informatica
+Claudio,Foroncelli,02/11/2003,Vigasio,Verona,mail1@mail.com,123456789,5,CI,Informatica
+Claudio,Foroncelli,02/11/2003,Vigasio,Verona,mail1@mail.com,123456789,4,CI,Informatica
+Claudio,Foroncelli,02/11/2003,Vigasio,Verona,mail1@mail.com,123456789,4,CI,Informatica
+Claudio,Foroncelli,02/11/2003,Vigasio,Verona,mail1@mail.com,123456789,4,CI,Informatica
+Claudio,Foroncelli,02/11/2003,Vigasio,Verona,mail1@mail.com,123456789,4,CI,Informatica

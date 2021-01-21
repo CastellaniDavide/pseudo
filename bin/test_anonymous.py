@@ -10,7 +10,8 @@ def test():
 	Write here all test you want to do.
 	REMEMBER to test your programm you can't use __init__ function
 	"""
-	assert anonymous.anonymous() == "anonymous", "test failed"
+	# No test
+	#assert anonymous.anonymous() == "anonymous", "test failed"
 	#assert anonymous.<function>(<values>) == <the result(s) you would like to have>, "<the fail message>"
 	
 if __name__ == "__main__":
