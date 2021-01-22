@@ -1,5 +1,7 @@
 """anonymous
 """
+from os import path
+from datetime import datetime
 
 __author__ = "help@castellanidavide.it"
 __version__ = "1.0 2021-01-19"
@@ -9,6 +11,8 @@ class anonymous:
 		"""Where it all begins
 		"""
 		self.div = div
+		self.start_time = int(datetime.now().timestamp())
+		
 		self.read_input()
 		self.get_positions()
 		self.elaborate_secrets()
@@ -17,13 +21,13 @@ class anonymous:
 	def read_input(self):
 		"""Reads my input file(s)
 		"""
-		self.conf = open("../flussi/anonymus.conf").read().split("\n")
+		self.conf = open(path.join(path.dirname(path.abspath(__file__)), "..", "conf", "pseudo.conf")).read().split("\n")
 		while "" in self.conf: self.conf.remove("")
 
 		first = True
 		self.body = []
 
-		for line in open("../flussi/example.csv"):
+		for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", "example.csv")):
 			line = line.strip().split(self.div)
 			if first:
 				first = False
@@ -45,24 +49,30 @@ class anonymous:
 		for j in sorted(self.positions, reverse=True):
 			self.secret_header.append(self.header[j])
 			del self.header[j] 
+		self.secret_header.append("ID")
+		self.header.insert(0, "ID")
 		self.secret_header = self.secret_header[::-1]
 		
 		self.secret_body = []
-		for i in self.body:
+		for index, i in enumerate(self.body):
 			partial_secret = []
 			for j in sorted(self.positions, reverse=True):
 				partial_secret.append(i[j])
 				del i[j]
+
+			id = f"{self.start_time * 10000 + index}"
+			partial_secret.append(id)
+			self.body[index].insert(0, id)
 			self.secret_body.append(partial_secret[::-1])
 
 	def write_output(self):
 		"""Write my outputs
 		"""		
-		with open("../flussi/file_out.csv", "w+") as file_out:
+		with open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", "public.csv"), "w+") as file_out:
 			file_out.write(self.array2csv([self.header,]))
 			file_out.write(self.array2csv(self.body))
-
-		with open("../flussi/file_out_secret.csv", "w+") as file_out:
+			
+		with open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", "secret.csv"), "w+") as file_out:
 			file_out.write(self.array2csv([self.secret_header,]))
 			file_out.write(self.array2csv(self.secret_body))
 
