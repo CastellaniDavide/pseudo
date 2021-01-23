@@ -5,11 +5,12 @@
     "\\.github\\ISSUE_TEMPLATE",
     "\\.github\\workflows",
     "\\bin",
+    "\\conf",
     "\\docs",
     "\\flussi",
     "\\log",
     "\\requirements"
   ],
-  "SelectedNode": "\\bin\\anonymous.py",
+  "SelectedNode": "\\flussi\\public.csv",
   "PreviewInSolutionExplorer": false
 }
