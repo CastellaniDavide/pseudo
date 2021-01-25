@@ -126,8 +126,13 @@ class pseudo:
 	def init_log(self):
 		"""Inizialize the log
 		"""
+		try:
+			if open(path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), 'r+').read() == "":
+				assert(False)
+		except:
+			open(path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), 'w+').write('"message,"date-time","tick"\n')
+
 		logging.basicConfig(filename=path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), level=logging.DEBUG, format=f'"%(message)s","{datetime.now()}","{datetime.now().timestamp()}"')
-		open(path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), 'a+').close()
 		logging.info("Start")
 		logging.info("Log inizialized")	
 		
