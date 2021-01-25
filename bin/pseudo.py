@@ -27,17 +27,15 @@ class pseudo:
 		self.conf = loads(open(path.join(path.dirname(path.abspath(__file__)), "..", "conf", "pseudo.conf")).read())
 		logging.info("Readed configuration file")
 
-		first = True
-		self.body = []
 		body = ""
-
-		for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["input"])):
-			#line = line.strip().split(self.conf["csv_div"])
-			if self.conf["header"] and first:
-				first = False
-				self.header = self.csv2array(line)[0]
-			else:
-				body += f"{line}\n"
+		for input_file in self.conf["files"]["inputs"]:
+			first = True
+			for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)):
+				if self.conf["header"] and first:
+					first = False
+					self.header = self.csv2array(line)[0]
+				else:
+					body += f"{line}\n"
 
 		self.body = self.csv2array(body)
 		logging.info("Readed input file")
