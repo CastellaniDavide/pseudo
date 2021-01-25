@@ -4,6 +4,7 @@ from os import path
 from datetime import datetime
 from json import loads
 import logging
+import csv
 
 __author__ = "Bellamoli Riccardo", "Castellani Davide"
 __version__ = "01.01 2021-01-23"
@@ -29,15 +30,16 @@ class pseudo:
 		first = True
 		self.body = []
 		body = ""
+
 		for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["input"])):
-			line = line.strip().split(self.conf["csv_div"])
+			#line = line.strip().split(self.conf["csv_div"])
 			if self.conf["header"] and first:
 				first = False
-				self.header = line
+				self.header = self.csv2array(line)[0]
 			else:
 				body += f"{line}\n"
 
-		self.body = self.csv2array(body[:-1:])
+		self.body = self.csv2array(body)
 		logging.info("Readed input file")
 
 	def get_positions(self):
@@ -101,14 +103,22 @@ class pseudo:
 
 		for line in csv.split("\n"):
 			temp = []
-			for item in line.replace(self.conf["csv_div"], f"'{self.conf['csv_div']}'").split(f"'{self.conf['csv_div']}'"):
-				try:
-					temp.append(int(item.replace('"', "")))
-				except:
-					temp.append(item.replace('"', ""))
+			temp2 = ""
+			take = True
+			for char in line:
+				if char == self.conf['csv_div'] and take:
+					temp.append(temp2)
+					temp2 = ""
+				elif char == '"':
+					take = not take
+				else:
+					temp2 += char
+
+			temp.append(temp2)
 			array.append(temp)
 
-		logging.info("Converted csv into array")		
+		logging.info("Converted csv into array")
+		while [""] in array : array.remove([""])
 		return array
 
 	def array2csv(self, array):
