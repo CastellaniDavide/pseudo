@@ -38,7 +38,23 @@ class pseudo:
 					body += f"{line}\n"
 
 		self.body = self.csv2array(body)
-		logging.info("Readed input file")
+		logging.info("Readed input(s) file")
+
+		self.exists = {}
+		self.secret_body = []
+		body = ""
+		first = True
+		for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["last_secret"])):
+			if self.conf["header"] and first:
+				first = False
+			else:
+				body += f"{line}\n"
+
+		for elem in self.csv2array(body):
+			self.exists[str(elem[1:])] = elem[0]
+			self.secret_body.append(elem)
+
+		logging.info("Load users IDs")
 
 	def get_positions(self):
 		"""Gets the positions
@@ -50,6 +66,16 @@ class pseudo:
 		else:
 			self.positions = self.conf["values_to_del"]
 		logging.info("Getted all position where delete")
+
+	def get_id(self, mytime, index, actual_values):
+		"""Gets the ID
+		"""
+		if str(actual_values) in self.exists:
+			return self.exists[str(actual_values)]
+		else:
+			id = f"{mytime * 10**6 + index}"
+			self.exists[str(actual_values)] = id
+			return id
 
 	def elaborate_secrets(self):
 		"""Clear dangerous parts and put them into self.secret_* variabile(s)
@@ -63,19 +89,19 @@ class pseudo:
 			self.header.insert(0, "ID")
 			self.secret_header = self.secret_header[::-1]
 			logging.info("Secret header elaborated")
-		
-		self.secret_body = []
+
 		mytime = int(datetime.now().timestamp())
+
 		for index, i in enumerate(self.body):
 			partial_secret = []
 			for j in sorted(self.positions, reverse=True):
 				partial_secret.append(i[j])
 				del i[j]
 
-			id = f"{mytime * 10000 + index}"
-			partial_secret.append(id)
-			self.body[index].insert(0, id)
-			self.secret_body.append(partial_secret[::-1])
+			if str(partial_secret[::-1]) not in self.exists:
+				partial_secret.append(self.get_id(mytime, index, partial_secret[::-1]))
+				self.secret_body.append(partial_secret[::-1])
+			self.body[index].insert(0, self.get_id(mytime, index, partial_secret[::-1]))
 		logging.info("Secret body elaborated")
 
 		logging.info("Secret elaborated")
