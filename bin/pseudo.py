@@ -28,14 +28,16 @@ class pseudo:
 
 		first = True
 		self.body = []
-
+		body = ""
 		for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["input"])):
 			line = line.strip().split(self.conf["csv_div"])
 			if self.conf["header"] and first:
 				first = False
 				self.header = line
 			else:
-				self.body.append(line)
+				body += f"{line}\n"
+
+		self.body = self.csv2array(body[:-1:])
 		logging.info("Readed input file")
 
 	def get_positions(self):
