@@ -4,7 +4,7 @@ from os import path
 from datetime import datetime
 from json import loads
 import logging
-import csv
+import xml.etree.ElementTree as ET
 
 __author__ = "Bellamoli Riccardo", "Castellani Davide"
 __version__ = "01.01 2021-01-23"
@@ -27,28 +27,62 @@ class pseudo:
 		self.conf = loads(open(path.join(path.dirname(path.abspath(__file__)), "..", "conf", "pseudo.conf")).read())
 		logging.info("Readed configuration file")
 
-		body = ""
+		self.body = []
+		
 		for input_file in self.conf["files"]["inputs"]:
-			first = True
-			for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)):
-				if self.conf["header"] and first:
-					first = False
-					self.header = self.csv2array(line)[0]
-				else:
-					body += f"{line}\n"
+			if ".csv" in input_file:
+				body = ""
+				first = True
+				for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)):
+					if self.conf["header"] and first:
+						first = False
+						self.header = self.csv2array(line)[0]
+					else:
+						body += f"{line}\n"
+				self.body += self.csv2array(body)
+			elif ".xml" in input_file:
+				root = ET.parse(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)).getroot()
 
-		self.body = self.csv2array(body)
+				items = []
+				temp = []
+				for elem in root.iter():
+					if elem.tag == root.tag:
+						continue
+					if elem.text not in [None, ""]:
+						if "\n" in elem.text:
+							items.append(temp)
+							temp = []
+						else:
+							temp.append(elem.text)
+				temp.append(elem.text)
+
+				# Remove extra intestations
+				while [] in items : items.remove([])
+				items = items[1:]
+				if ['9312', '23016', '0', '0', '1', 'False', 'False'] in items : items.remove(['9312', '23016', '0', '0', '1', 'False', 'False']) 
+				delate = items[0]
+				while delate in items : items.remove(delate)
+				if self.conf["header"]:
+					self.header = items[0]
+					while self.header in items : items.remove(self.header)
+
+				self.body += items
+		#print(self.body)
+
 		logging.info("Readed input(s) file")
 
 		self.exists = {}
 		self.secret_body = []
 		body = ""
 		first = True
-		for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["last_secret"])):
-			if self.conf["header"] and first:
-				first = False
-			else:
-				body += f"{line}\n"
+		try:
+			for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["last_secret"])):
+				if self.conf["header"] and first:
+					first = False
+				else:
+					body += f"{line}\n"
+		except:
+			pass
 
 		for elem in self.csv2array(body):
 			self.exists[str(elem[1:])] = elem[0]
@@ -94,9 +128,12 @@ class pseudo:
 
 		for index, i in enumerate(self.body):
 			partial_secret = []
-			for j in sorted(self.positions, reverse=True):
-				partial_secret.append(i[j])
-				del i[j]
+			try:
+				for j in sorted(self.positions, reverse=True):
+					partial_secret.append(i[j])
+					del i[j]
+			except:
+				pass
 
 			if str(partial_secret[::-1]) not in self.exists:
 				partial_secret.append(self.get_id(mytime, index, partial_secret[::-1]))
