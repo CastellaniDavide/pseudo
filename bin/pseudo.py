@@ -48,6 +48,14 @@ class pseudo:
 				for elem in root.iter():
 					if elem.tag == root.tag:
 						continue
+					if "Name" in str(elem.attrib) and "Worksheet" in str(elem):
+						temp_words = str(elem.attrib).replace('{', " ").replace('}', " ").replace("'", "").replace(':', "").strip().split(" ")
+						i = 0
+						for word in temp_words:
+							i += 1
+							if word == "Name":
+								self.name_sheet = temp_words[i]
+								# print(self.name_sheet)
 					if elem.text not in [None, ""]:
 						if "\n" in elem.text:
 							items.append(temp)
@@ -65,7 +73,10 @@ class pseudo:
 				if self.conf["header"]:
 					self.header = items[0]
 					while self.header in items : items.remove(self.header)
-
+				i2 = 0
+				for line in items:
+					items[i2].append(self.name_sheet)
+					i2 += 1
 				self.body += items
 		#print(self.body)
 
@@ -121,6 +132,7 @@ class pseudo:
 				del self.header[j] 
 			self.secret_header.append("ID")
 			self.header.insert(0, "ID")
+			self.header.append("NameSheet")
 			self.secret_header = self.secret_header[::-1]
 			logging.info("Secret header elaborated")
 
