@@ -12,7 +12,7 @@ __version__ = "01.01 2021-01-23"
 class pseudo:
 	def __init__ (self):
 		"""Where it all begins
-		"""		
+		"""
 		self.init_log()
 		self.read_input()
 		self.get_positions()
@@ -31,18 +31,29 @@ class pseudo:
 		
 		for input_file in self.conf["files"]["inputs"]:
 			if ".csv" in input_file:
+				# Elaborate csv file
 				body = ""
 				first = True
 				for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)):
 					if self.conf["header"] and first:
 						first = False
 						self.header = self.csv2array(line)[0]
+						self.header.append("NameSheet")
 					else:
 						body += f"{line}\n"
-				self.body += self.csv2array(body)
-			elif ".xml" in input_file:
-				root = ET.parse(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)).getroot()
 
+				items = self.csv2array(body)
+				
+				# Add NameSheet
+				for i in range(len(items)):
+					items[i].append(self.name_sheet)
+
+				# Add to other tables
+				self.body += items
+
+			elif ".xml" in input_file:
+				# Elaborate xml file
+				root = ET.parse(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)).getroot()
 				items = []
 				temp = []
 				for elem in root.iter():
@@ -50,12 +61,9 @@ class pseudo:
 						continue
 					if "Name" in str(elem.attrib) and "Worksheet" in str(elem):
 						temp_words = str(elem.attrib).replace('{', " ").replace('}', " ").replace("'", "").replace(':', "").strip().split(" ")
-						i = 0
-						for word in temp_words:
-							i += 1
+						for i, word in enumerate(temp_words):
 							if word == "Name":
-								self.name_sheet = temp_words[i]
-								# print(self.name_sheet)
+								self.name_sheet = temp_words[i+1]
 					if elem.text not in [None, ""]:
 						if "\n" in elem.text:
 							items.append(temp)
@@ -73,12 +81,14 @@ class pseudo:
 				if self.conf["header"]:
 					self.header = items[0]
 					while self.header in items : items.remove(self.header)
-				i2 = 0
-				for line in items:
-					items[i2].append(self.name_sheet)
-					i2 += 1
+					self.header.append("NameSheet")
+
+				# Add NameSheet
+				for i in range(len(items)):
+					items[i].append(self.name_sheet)
+					
+				# Add to other tables
 				self.body += items
-		#print(self.body)
 
 		logging.info("Readed input(s) file")
 
@@ -92,14 +102,13 @@ class pseudo:
 					first = False
 				else:
 					body += f"{line}\n"
+			for elem in self.csv2array(body):
+				self.exists[str(elem[1:])] = elem[0]
+				self.secret_body.append(elem)
+
+			logging.info("Load users IDs")
 		except:
-			pass
-
-		for elem in self.csv2array(body):
-			self.exists[str(elem[1:])] = elem[0]
-			self.secret_body.append(elem)
-
-		logging.info("Load users IDs")
+			logging.info("No user IDs to load")
 
 	def get_positions(self):
 		"""Gets the positions
@@ -132,7 +141,6 @@ class pseudo:
 				del self.header[j] 
 			self.secret_header.append("ID")
 			self.header.insert(0, "ID")
-			self.header.append("NameSheet")
 			self.secret_header = self.secret_header[::-1]
 			logging.info("Secret header elaborated")
 
