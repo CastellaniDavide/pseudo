@@ -46,7 +46,7 @@ class pseudo:
 				
 				# Add NameSheet
 				for i in range(len(items)):
-					items[i].append(self.name_sheet)
+					items[i].append(input_file.replace(".csv", ""))
 
 				# Add to other tables
 				self.body += items
@@ -56,6 +56,7 @@ class pseudo:
 				root = ET.parse(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)).getroot()
 				items = []
 				temp = []
+				self.name_sheet = []
 				for elem in root.iter():
 					if elem.tag == root.tag:
 						continue
@@ -63,7 +64,7 @@ class pseudo:
 						temp_words = str(elem.attrib).replace('{', " ").replace('}', " ").replace("'", "").replace(':', "").strip().split(" ")
 						for i, word in enumerate(temp_words):
 							if word == "Name":
-								self.name_sheet = temp_words[i+1]
+								self.name_sheet.append(temp_words[i+1])
 					if elem.text not in [None, ""]:
 						if "\n" in elem.text:
 							items.append(temp)
@@ -75,20 +76,31 @@ class pseudo:
 				# Remove extra intestations
 				while [] in items : items.remove([])
 				items = items[1:]
-				if ['9312', '23016', '0', '0', '1', 'False', 'False'] in items : items.remove(['9312', '23016', '0', '0', '1', 'False', 'False']) 
-				delate = items[0]
-				while delate in items : items.remove(delate)
+				if ['9312', '23016', '0', '0', '1', 'False', 'False'] in items : items.remove(['9312', '23016', '0', '0', '1', 'False', 'False'])
+
 				if self.conf["header"]:
-					self.header = items[0]
-					while self.header in items : items.remove(self.header)
+					self.header = items[0] if items[0] != ['False', 'False'] else items[1]
+					# while self.header in items : items.remove(self.header)
 					self.header.append("NameSheet")
 
 				# Add NameSheet
+				j = 0
+				save = True
+				items2 = []
 				for i in range(len(items)):
-					items[i].append(self.name_sheet)
+					if 'False' in items[i]:
+						save = False
+						if ['False', 'False'] == items[i]:
+							j += 1
+					else:
+						if save and items != self.header:
+							items[i].append(self.name_sheet[j])
+							items2.append(items[i])
+						else:
+							save = True
 					
 				# Add to other tables
-				self.body += items
+				self.body += items2
 
 		logging.info("Readed input(s) file")
 
@@ -145,7 +157,6 @@ class pseudo:
 			logging.info("Secret header elaborated")
 
 		mytime = int(datetime.now().timestamp())
-
 		for index, i in enumerate(self.body):
 			partial_secret = []
 			try:
@@ -160,6 +171,7 @@ class pseudo:
 				self.secret_body.append(partial_secret[::-1])
 			self.body[index].insert(0, self.get_id(mytime, index, partial_secret[::-1]))
 		logging.info("Secret body elaborated")
+		
 
 		logging.info("Secret elaborated")
 
