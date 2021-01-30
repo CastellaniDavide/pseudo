@@ -7,7 +7,7 @@ import logging
 import xml.etree.ElementTree as ET
 
 __author__ = "Bellamoli Riccardo", "Castellani Davide"
-__version__ = "01.01 2021-01-23"
+__version__ = "02.01 2021-01-30"
 
 class pseudo:
 	def __init__ (self):
@@ -24,12 +24,17 @@ class pseudo:
 	def read_input(self):
 		"""Reads my input file(s)
 		"""
+		pseudo.printProgressBar(0, 1, suffix = 'read_input')
 		self.conf = loads(open(path.join(path.dirname(path.abspath(__file__)), "..", "conf", "pseudo.conf")).read())
 		logging.info("Readed configuration file")
 
+		# Inizialize some variabiles
 		self.body = []
+		self.header = []
 		
-		for input_file in self.conf["files"]["inputs"]:
+		# Read files
+		for index, input_file in enumerate(self.conf["files"]["inputs"]):
+			pseudo.printProgressBar(index + 2, len(self.conf["files"]["inputs"]) + 1, suffix = 'read_input')
 			if ".csv" in input_file:
 				# Elaborate csv file
 				body = ""
@@ -37,8 +42,8 @@ class pseudo:
 				for line in open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", input_file)):
 					if self.conf["header"] and first:
 						first = False
-						self.header = self.csv2array(line)[0]
-						self.header.append("NameSheet")
+						header = self.csv2array(line)[0]
+						header.append("NameSheet") # TODO
 					else:
 						body += f"{line}\n"
 
@@ -48,8 +53,7 @@ class pseudo:
 				for i in range(len(items)):
 					items[i].append(input_file.replace(".csv", ""))
 
-				# Add to other tables
-				self.body += items
+				self.elaborate_table(header, items)
 
 			elif ".xml" in input_file:
 				# Elaborate xml file
@@ -78,15 +82,11 @@ class pseudo:
 				items = items[1:]
 				if ['9312', '23016', '0', '0', '1', 'False', 'False'] in items : items.remove(['9312', '23016', '0', '0', '1', 'False', 'False'])
 
-				if self.conf["header"]:
-					self.header = items[0] if items[0] != ['False', 'False'] else items[1]
-					# while self.header in items : items.remove(self.header)
-					self.header.append("NameSheet")
-
 				# Add NameSheet
 				j = 0
 				save = True
 				items2 = []
+				header = None
 				for i in range(len(items)):
 					if 'False' in items[i]:
 						save = False
@@ -97,13 +97,14 @@ class pseudo:
 							items[i].append(self.name_sheet[j])
 							items2.append(items[i])
 						else:
+							self.elaborate_table(header, items2)
+							items2 = []
+							header = items[i]
 							save = True
-					
-				# Add to other tables
-				self.body += items2
+				self.elaborate_table(header, items2)
 
 		logging.info("Readed input(s) file")
-
+		
 		self.exists = {}
 		self.secret_body = []
 		body = ""
@@ -122,15 +123,39 @@ class pseudo:
 		except:
 			logging.info("No user IDs to load")
 
+	def elaborate_table(self, header, body):
+		"""Elaborate a single table
+		"""
+		if header != None:
+			# Insert new elements into the self.header
+			for header_elem in header:
+				if header_elem not in self.header:
+					self.header.append(header_elem)
+
+			# Get the indexes of the header
+			pos_header = []
+			for header_elem in header:
+				pos_header.append(self.header.index(header_elem))
+
+			# Insert new elements into the self.body
+			for line in body:
+				add_elem = [""] * len(self.header)
+				for elem, index in zip(line, pos_header):
+					add_elem[index] = elem
+				self.body.append(add_elem)
+
 	def get_positions(self):
 		"""Gets the positions
 		"""
 		self.positions = []
+		pseudo.printProgressBar(0, 1, suffix = 'get_positions')
 		if self.conf["header"]:
-			for element in self.conf["values_to_del"]:
+			for i, element in enumerate(self.conf["values_to_del"]):
 				self.positions.append(self.header.index(element))
+				pseudo.printProgressBar(i+1, len(self.conf["values_to_del"]), suffix = 'get_positions')
 		else:
 			self.positions = self.conf["values_to_del"]
+			pseudo.printProgressBar(1, 1, suffix = 'get_positions')
 		logging.info("Getted all position where delete")
 
 	def get_id(self, mytime, index, actual_values):
@@ -146,11 +171,13 @@ class pseudo:
 	def elaborate_secrets(self):
 		"""Clear dangerous parts and put them into self.secret_* variabile(s)
 		"""
+		pseudo.printProgressBar(0, len(self.positions) + len(self.body), suffix = 'elaborate_secrets')
 		if self.conf["header"]:
 			self.secret_header = []
-			for j in sorted(self.positions, reverse=True):
+			for i, j in enumerate(sorted(self.positions, reverse=True)):
 				self.secret_header.append(self.header[j])
 				del self.header[j] 
+				pseudo.printProgressBar(i + 1, len(self.positions) + len(self.body), suffix = 'elaborate_secrets')
 			self.secret_header.append("ID")
 			self.header.insert(0, "ID")
 			self.secret_header = self.secret_header[::-1]
@@ -170,6 +197,9 @@ class pseudo:
 				partial_secret.append(self.get_id(mytime, index, partial_secret[::-1]))
 				self.secret_body.append(partial_secret[::-1])
 			self.body[index].insert(0, self.get_id(mytime, index, partial_secret[::-1]))
+
+			pseudo.printProgressBar(len(self.positions) + index + 1, len(self.positions) + len(self.body), suffix = 'elaborate_secrets')
+
 		logging.info("Secret body elaborated")
 		
 
@@ -178,15 +208,17 @@ class pseudo:
 	def write_output(self):
 		"""Write my outputs
 		"""
+		pseudo.printProgressBar(0, 2, suffix = 'write_output')
 		with open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["output"]["public"]), "w+") as file_out:
 			if self.conf["header"]: 
 				file_out.write(self.array2csv([self.header,]))
 			file_out.write(self.array2csv(self.body))
-			
+		pseudo.printProgressBar(1, 2, suffix = 'write_output')
 		with open(path.join(path.dirname(path.abspath(__file__)), "..", "flussi", self.conf["files"]["output"]["private"]), "w+") as file_out:
 			if self.conf["header"]: 
 				file_out.write(self.array2csv([self.secret_header,]))
 			file_out.write(self.array2csv(self.secret_body))
+		pseudo.printProgressBar(2, 2, suffix = 'write_output')
 		logging.info("Writed outputs")
 
 	def csv2array(self, csv):
@@ -223,7 +255,6 @@ class pseudo:
 			for item in line:
 				text += f'"{item}"{self.conf["csv_div"]}'
 			text = text[:-1:] + "\n"
-
 		
 		logging.info("Converted array into csv")
 		return text
@@ -231,6 +262,7 @@ class pseudo:
 	def init_log(self):
 		"""Inizialize the log
 		"""
+		pseudo.printProgressBar(0, 1, suffix = 'init_log')
 		try:
 			if open(path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), 'r+').read() == "":
 				assert(False)
@@ -238,8 +270,18 @@ class pseudo:
 			open(path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), 'w+').write('"message,"date-time","tick"\n')
 
 		logging.basicConfig(filename=path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), level=logging.DEBUG, format=f'"%(message)s","{datetime.now()}","{datetime.now().timestamp()}"')
+		open(path.join(path.dirname(path.abspath(__file__)), "..", "log", "trace.log"), 'a+')
 		logging.info("Start")
-		logging.info("Log inizialized")	
-		
+		logging.info("Log inizialized")
+		pseudo.printProgressBar(1, 1, suffix = 'init_log')
+	
+	def printProgressBar(iteration, total, prefix = 'Progress_pseudo:', suffix = '', decimals = 1, length = 50, fill = '#', printEnd = "\r"):
+		""" Creates a progress bar
+		"""
+		percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+		filledLength = int(length * iteration // total)
+		bar = fill * filledLength + '-' * (length - filledLength)
+		print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = "\n" if iteration == total else printEnd)
+
 if __name__ == "__main__":
 	pseudo()

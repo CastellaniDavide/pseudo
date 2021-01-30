@@ -1,17 +1,17 @@
-# pseudo
-[![GitHub license](https://img.shields.io/badge/license-GNU-green?style=flat)](https://github.com/CastellaniDavide/cpp-pseudo/blob/master/LICENSE) ![Author](https://img.shields.io/badge/authors-Bellamoli%20Riccardo,%20Castellani%20Davide-green?style=flat) ![Version](https://img.shields.io/badge/version-v01.01-blue?style=flat) ![Language Python](https://img.shields.io/badge/language-Python-yellowgreen?style=flat) ![sys.platform supported](https://img.shields.io/badge/OS%20platform%20supported-Linux,%20Windows%20&%20Mac%20OS-blue?style=flat) [![On GitHub](https://img.shields.io/badge/on%20GitHub-True-green?style=flat&logo=github)](https://github.com/CastellaniDavide/pseudo)
+﻿# pseudo
+[![GitHub license](https://img.shields.io/badge/license-GNU-green?style=flat)](https://github.com/CastellaniDavide/cpp-pseudo/blob/master/LICENSE) ![Author](https://img.shields.io/badge/authors-Bellamoli%20Riccardo,%20Castellani%20Davide-green?style=flat) ![Version](https://img.shields.io/badge/version-v02.01-blue?style=flat) ![Language Python](https://img.shields.io/badge/language-Python-yellowgreen?style=flat) ![sys.platform supported](https://img.shields.io/badge/OS%20platform%20supported-Linux,%20Windows%20&%20Mac%20OS-blue?style=flat) [![On GitHub](https://img.shields.io/badge/on%20GitHub-True-green?style=flat&logo=github)](https://github.com/CastellaniDavide/pseudo)
 
 ## Description
-Pseudo is a program that, from a file csv in input, split the informations to sensible and not sensible. 
+Pseudo is a program that, from files csv or xml in input, split the informations to sensible and not sensible. 
 We have the file pseudo.conf that contains all the informations for the configuration. 
-In there we find the fields that we want to "delete" (make pseudo-anonymous) and put these informations into the "secret.csv" file and all the rest that don't need to be hide go in the file "public.csv". 
+In there we find the fields that we want to "delete" (make pseudo-anonymous) and put these informations into the "secret.csv" file and all the rest that don't need to be hide go in the file "public.csv". If you run the program from the cmd or a shell you will see the progress bar of the different part of the program. :smile: 
 
 ## Required
  - python3
 
 ## Configuration
 
-### Setup input file
+### Setup input(s) file
 ![](./setupinput.png)
   - Move your .csv file into "flussi" folder
 
@@ -22,6 +22,7 @@ In there we find the fields that we want to "delete" (make pseudo-anonymous) and
     - set true only if you have an header in the input file, false anyways
     - set the fields to "hide" from the public file
     - change the divisor depending on which we have in the input file
+    - if you want you can add the last secret file to use the same ID for the same values (eg. Name, Surname)
   - If you want you can insert how many paramers you want
     - Attention 
       - if you have an header unsert write the strings of the parameters
@@ -33,9 +34,6 @@ In there we find the fields that we want to "delete" (make pseudo-anonymous) and
      - ![](./setupoutputpublic.png)
    - Secret/ Private
      - ![](./setupoutputprivate.png)
-
-### ATTENTION
- - Do not delate/ change trace.log file
 
 ## Directories structure
  - .github
@@ -54,7 +52,8 @@ In there we find the fields that we want to "delete" (make pseudo-anonymous) and
    - README.md
  - flussi
    - example.csv
-   - *.csv <- output files
+   - *.xml/ *.csv <- input file(s)
+   - *.csv <- output file(s)
  - log
    - trace.log
  - requirements
@@ -66,7 +65,14 @@ In there we find the fields that we want to "delete" (make pseudo-anonymous) and
  - python3 test_pseudo.py
 
 # Changelog
+ - [Version_02.01_2021-1-30](#Version_0201_2021-1-30)
  - [Version_01.01_2021-1-23](#Version_0101_2021-1-23)
+
+## Version_02.01_2021-1-30
+ - Managed xml files
+ - Managed multi files (.csv, .xml)
+ - Managed different headers
+ - Added progress bar
 
 ## Version_01.01_2021-1-23
  - Initial version
@@ -76,7 +82,7 @@ In there we find the fields that we want to "delete" (make pseudo-anonymous) and
  - Added parameter in the file pseudo.conf
 
 ---
-Made by Castellani Davide 
+Made by Castellani Davide & Bellamoli Riccardo
 If you have any problem please contact me:
 - [help@castellanidavide.it](mailto:help@castellanidavide.it)
 - [riccardobellamoli2003@gmail.com](mailto:riccardobellamoli2003@gmail.com)
