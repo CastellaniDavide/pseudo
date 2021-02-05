@@ -61,6 +61,8 @@ class pseudo:
 				items = []
 				temp = []
 				self.name_sheet = []
+				get_elem = False
+
 				for elem in root.iter():
 					if elem.tag == root.tag:
 						continue
@@ -69,12 +71,20 @@ class pseudo:
 						for i, word in enumerate(temp_words):
 							if word == "Name":
 								self.name_sheet.append(temp_words[i+1])
-					if elem.text not in [None, ""]:
-						if "\n" in elem.text:
-							items.append(temp)
-							temp = []
+					if elem.text not in [""]:
+						if get_elem or elem.text != None:
+							if elem.text == None:
+								temp.append("")
+							elif "\n" in elem.text:
+								items.append(temp)
+								temp = []
+							else:
+								temp.append(elem.text)
+							get_elem = False
 						else:
-							temp.append(elem.text)
+							if elem.text == None:
+								get_elem = True
+
 				temp.append(elem.text)
 
 				# Remove extra intestations
@@ -86,7 +96,7 @@ class pseudo:
 				j = 0
 				save = True
 				items2 = []
-				header = None
+				header = []
 				for i in range(len(items)):
 					if 'False' in items[i]:
 						save = False
@@ -97,10 +107,12 @@ class pseudo:
 							items[i].append(self.name_sheet[j])
 							items2.append(items[i])
 						else:
+							header.append("NameSheet")
 							self.elaborate_table(header, items2)
 							items2 = []
 							header = items[i]
 							save = True
+				header.append("NameSheet")
 				self.elaborate_table(header, items2)
 
 		logging.info("Readed input(s) file")
@@ -126,23 +138,29 @@ class pseudo:
 	def elaborate_table(self, header, body):
 		"""Elaborate a single table
 		"""
-		if header != None:
-			# Insert new elements into the self.header
-			for header_elem in header:
-				if header_elem not in self.header:
-					self.header.append(header_elem)
+		if body != []:
+			if header != None:
+				# Insert new elements into the self.header
+				for header_elem in header:
+					if header_elem not in self.header:
+						self.header.append(header_elem)
 
-			# Get the indexes of the header
-			pos_header = []
-			for header_elem in header:
-				pos_header.append(self.header.index(header_elem))
+				# Get the indexes of the header
+				pos_header = []
+				for header_elem in header:
+					pos_header.append(self.header.index(header_elem))
+				
+				# Add new empty values
+				for i in range(len(self.body)):
+					for j in range(len(self.header) - len(self.body[i])):
+						self.body[i].append("")
 
-			# Insert new elements into the self.body
-			for line in body:
-				add_elem = [""] * len(self.header)
-				for elem, index in zip(line, pos_header):
-					add_elem[index] = elem
-				self.body.append(add_elem)
+				# Insert new elements into the self.body
+				for line in body:
+					add_elem = [""] * len(self.header)
+					for elem, index in zip(line, pos_header):
+						add_elem[index] = elem
+					self.body.append(add_elem)
 
 	def get_positions(self):
 		"""Gets the positions
@@ -202,7 +220,6 @@ class pseudo:
 
 		logging.info("Secret body elaborated")
 		
-
 		logging.info("Secret elaborated")
 
 	def write_output(self):
